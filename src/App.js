@@ -1,6 +1,6 @@
 import React from 'react';
-import './App.css';
 import styled from 'styled-components';
+
 import { Header, Avatar, Quote } from './components';
 import { fetchIpAddress } from './actions/fetchIpAddress';
 import { useDispatch } from 'react-redux';

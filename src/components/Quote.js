@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { fetchRandomQuote, addToPreviousQuotes } from '../actions';
+import { fetchRandomQuote } from '../actions';
 import { Card } from './Card';
 import { Markup } from './Markup';
 import { Button } from './Button';
@@ -38,17 +38,11 @@ export function Quote() {
   const previousQuotes = useSelector((state) => state.previousQuotes);
   const quotesLength = previousQuotes.length;
 
-  const [localState, setLocalState] = usePersistedState('previous');
+  const [, setLocalState] = usePersistedState('previoused');
 
   React.useEffect(() => {
     dispatch(fetchRandomQuote());
   }, [dispatch]);
-
-  // React.useEffect(() => {
-  //   if (!!localState) {
-  //     dispatch(addToPreviousQuotes(localState));
-  //   }
-  // }, [dispatch, localState]);
 
   const handleBtnClick = (event) => {
     // save current quote to previousQuotes
@@ -56,7 +50,7 @@ export function Quote() {
     const rated = button.textContent;
     const data = { id, quote, author, rated };
 
-    setLocalState('previous', data);
+    setLocalState(data);
     // fetch new quote
     dispatch(fetchRandomQuote());
   };
@@ -74,9 +68,6 @@ export function Quote() {
           <StyledTitle>Quote # {quotesLength + 1}</StyledTitle>
           <StyledQuote>{quote && <Markup content={quote} />}</StyledQuote>
           <StyledAuthor>{author && <Markup content={author} />}</StyledAuthor>
-          {/* <React.Suspense fallback={<div>Loading Reader...</div>}>
-              {quote ? <ReaderLazy quote={quote} /> : null}
-            </React.Suspense> */}
           {quote ? <Reader quote={quote} /> : null}
           <RateButtons handleBtnClick={handleBtnClick} />
           <PreviousQuoteBtnWrapper>

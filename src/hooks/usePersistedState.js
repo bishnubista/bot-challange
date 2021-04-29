@@ -1,33 +1,52 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 
-import { addToPreviousQuotes } from '../actions/addToPreviousQuotes';
+import { UPDATE_TO_PREVIOUS_QUOTES, addToPreviousQuotes } from '../actions';
+
 const getStateFrom = (key) => {
-  const val = window.localStorage.getItem(key) || null;
-  if (val) {
-    return JSON.parse(val);
+  const valueInLocalStorage = window.localStorage.getItem(key);
+  if (valueInLocalStorage) {
+    const parsed = JSON.parse(valueInLocalStorage);
+    console.log('parsed ', parsed);
+    return parsed;
+  } else {
+    window.localStorage.removeItem(key);
   }
-  return val;
+  return [];
 };
 
 export function usePersistedState(key) {
   const dispatch = useDispatch();
-  const [state, setState] = React.useState(() => getStateFrom(key));
-  const setStateIn = (key, value) => {
-    window.localStorage.setItem(key, JSON.stringify(value));
+  const [state, setState] = React.useState(null);
 
-    setState([value]);
-  };
+  const prevKeyRef = React.useRef(key);
+  const prevStateRef = React.useRef([]);
+
+  React.useEffect(() => {
+    const value = getStateFrom(key);
+    if (value.length) {
+      prevStateRef.current = value;
+      dispatch({ type: UPDATE_TO_PREVIOUS_QUOTES, data: value });
+    }
+  }, [key, dispatch]);
 
   React.useEffect(() => {
     try {
-      if (state) {
-        dispatch(addToPreviousQuotes([...state]));
+      const prevKey = prevKeyRef.current;
+      if (prevKey !== key) {
+        window.localStorage.removeItem(key);
+      }
+      prevKeyRef.current = key;
+
+      if (prevStateRef.current && state) {
+        const value = [...prevStateRef.current, state];
+        window.localStorage.setItem(key, JSON.stringify(value));
+        dispatch(addToPreviousQuotes(state));
       }
     } catch (error) {
       console.error('Error', error);
     }
-  }, [state, dispatch]);
+  }, [state, key, dispatch]);
 
-  return [state, setStateIn];
+  return [state, setState];
 }

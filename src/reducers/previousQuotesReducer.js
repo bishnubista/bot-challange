@@ -4,7 +4,7 @@ const initialState = [];
 export const previousQuotesReducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_TO_PREVIOUS_QUOTES: {
-      return [...state, ...action.data];
+      return [...state, action.data];
     }
     case UPDATE_TO_PREVIOUS_QUOTES:
       return action.data;
