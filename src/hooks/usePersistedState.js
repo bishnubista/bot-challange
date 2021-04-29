@@ -39,8 +39,8 @@ export function usePersistedState(key) {
       prevKeyRef.current = key;
 
       if (prevStateRef.current && state) {
-        const value = [...prevStateRef.current, state];
-        window.localStorage.setItem(key, JSON.stringify(value));
+        prevStateRef.current = [...prevStateRef.current, state];
+        window.localStorage.setItem(key, JSON.stringify(prevStateRef.current));
         dispatch(addToPreviousQuotes(state));
       }
     } catch (error) {
