@@ -1,30 +1,72 @@
 import React from 'react';
+import styled from 'styled-components';
 
 import { readThisQuoteApi } from '../api';
+import VolumeUp from '../assets/volume-icon';
+
+const extractContent = (innerText) => {
+  const span = document.createElement('span');
+  span.innerHTML = innerText;
+  return span.textContent || span.innerText;
+};
+
+const StyledReader = styled.a`
+  display: flex;
+  &:hover,
+  &:active {
+    color: red;
+  }
+`;
+
+const StyledReaderText = styled.p`
+  text-decoration: underline;
+  margin: 3px;
+  margin-top: 3px;
+  padding-bottom: 10px;
+`;
+
 export function Reader({ quote }) {
+  const audioRef = React.useRef(null);
   const [readText, setReadText] = React.useState('');
-  const handleRead = () => {
-    const text = quote
+
+  const handleHover = React.useCallback(() => {
+    const inner = extractContent(quote);
+
+    const urlWithInnerText = inner
+      .replace(/(\r\n|\n|\r)/gm, '')
       .split(' ')
-      .map((txt) => txt + '+')
+      .filter(Boolean)
+      .map((str, i) => (i > 0 ? '+' + str : str))
       .join('');
 
-    console.log('txt', text);
-    const url = readThisQuoteApi(decodeURI(text));
+    const url = readThisQuoteApi(urlWithInnerText);
     setReadText(url);
+  }, [quote]);
+
+  const handleRead = () => {
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
   };
-  console.log(readText);
+
   return (
     <>
       {readText && (
-        <audio controls src={readText}>
+        <audio src={readText} ref={audioRef}>
           Your browser does not support the
           <code>audio</code> element.
         </audio>
       )}
-      <p onClick={handleRead} style={{ textDecoration: 'underline' }}>
-        Read this quote
-      </p>
+
+      <StyledReader
+        onClick={handleRead}
+        onMouseEnter={handleHover}
+        onFocus={handleHover}
+      >
+        <VolumeUp />
+        <StyledReaderText>Read this quote</StyledReaderText>
+      </StyledReader>
     </>
   );
 }
+export default React.memo(Reader);

@@ -9,7 +9,6 @@ export const fetchIpAddress = () => async (dispatch) => {
     }
     const ip = await response.json();
     dispatch({ type: FETCH_IP_SUCCESS, data: ip });
-    console.log(ip);
   } catch (error) {
     console.error(error);
   }

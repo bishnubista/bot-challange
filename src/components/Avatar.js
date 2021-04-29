@@ -3,22 +3,25 @@ import { useSelector } from 'react-redux';
 
 import { Image } from './Image';
 import { generateRobot } from '../api';
+
 export function Avatar() {
   const [imgUrl, setImgUrl] = React.useState('');
   const { usersIp } = useSelector((state) => state.idAddress);
 
   React.useEffect(() => {
-    const url = generateRobot(usersIp);
-    setImgUrl(url);
+    if (usersIp) {
+      const url = generateRobot(usersIp);
+      setImgUrl(url);
+    }
   }, [usersIp]);
 
   return (
     <div>
-      <Image
-        imgSrc={imgUrl}
-        alt='robot avatar'
-        style={{ width: '100px', height: '100px' }}
-      />
+      {imgUrl && (
+        <Image imgSrc={imgUrl} alt='robot avatar' width='70px' height='70px' />
+      )}
     </div>
   );
 }
+
+export default Avatar;

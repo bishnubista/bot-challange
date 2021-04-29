@@ -1,71 +1,94 @@
 import React from 'react';
-
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchRandomQuote } from '../actions/fetchRandomQuoteAction';
+import styled from 'styled-components';
 
+import { fetchRandomQuote, addToPreviousQuotes } from '../actions';
 import { Card } from './Card';
 import { Markup } from './Markup';
 import { Button } from './Button';
-import { PreviouslyQuotes } from './PreviouslyQuotes';
-import { Reader } from './Reader';
+import { PreviousQuotes } from './PreviousQuotes';
+import Reader from './Reader';
+import { RateButtons } from './RateButtons';
+import { usePersistedState } from '../hooks/usePersistedState';
+// const ReaderLazy = React.lazy(() => import('./Reader'));
+
+const StyledQuoteWrapper = styled.div`
+  width: 85vw;
+  margin: 10px auto;
+`;
+
+const PreviousQuoteBtnWrapper = styled.div`
+  margin: 10px;
+`;
+
+const StyledTitle = styled.h3``;
+
+export const StyledQuote = styled.div`
+  line-height: 1.5;
+`;
+
+export const StyledAuthor = styled(StyledQuote)`
+  font-style: italic;
+`;
+
 export function Quote() {
   const dispatch = useDispatch();
   const [showPrevQuotes, setShowPrevQuotes] = React.useState(false);
-  const { quote, author } = useSelector((state) => state.currentQuote);
+  const { id, quote, author } = useSelector(({ currentQuote }) => currentQuote);
+  const previousQuotes = useSelector((state) => state.previousQuotes);
+  const quotesLength = previousQuotes.length;
+
+  const [localState, setLocalState] = usePersistedState('previous');
 
   React.useEffect(() => {
     dispatch(fetchRandomQuote());
   }, [dispatch]);
 
+  // React.useEffect(() => {
+  //   if (!!localState) {
+  //     dispatch(addToPreviousQuotes(localState));
+  //   }
+  // }, [dispatch, localState]);
+
   const handleBtnClick = (event) => {
     // save current quote to previousQuotes
     const button = event.target;
-    console.log('button ', button.textContent);
     const rated = button.textContent;
-    const data = { quote, author, rated };
-    dispatch({ type: 'ADD_TO_PREVIOUS_QUOTES', data });
+    const data = { id, quote, author, rated };
+
+    setLocalState('previous', data);
     // fetch new quote
     dispatch(fetchRandomQuote());
   };
 
   const togglePreviousQuote = () => {
     // toggle previous quotes
-    setShowPrevQuotes(!showPrevQuotes);
+    if (quotesLength) {
+      setShowPrevQuotes(!showPrevQuotes);
+    }
   };
   return (
-    <Card>
-      <div style={{ margin: '10px' }}>
-        <h2>Quote # 1</h2>
-        <div>{quote && <Markup content={quote} />}</div>
-        <p>{author}</p>
-        <Reader quote={quote} />
-      </div>
-
-      <div className='rated-button' style={{ display: 'flex' }}>
-        <Button
-          btnLabel='Lame'
-          onClick={handleBtnClick}
-          style={{ background: 'pink', padding: '5px', margin: '0 10px' }}
-        />
-        <Button
-          btnLabel='Meh...'
-          onClick={handleBtnClick}
-          style={{ background: 'yellow', padding: '5px', margin: '0 10px' }}
-        />
-        <Button
-          btnLabel='Great!'
-          onClick={handleBtnClick}
-          style={{ background: 'green', padding: '5px', margin: '0 10px' }}
-        />
-      </div>
-      {showPrevQuotes && <PreviouslyQuotes />}
-      <div className='previous-quote-button'>
-        <Button
-          btnLabel={`${showPrevQuotes ? 'Hide' : 'View'} Previous Quotes`}
-          onClick={togglePreviousQuote}
-          style={{ padding: '5px', margin: '10px' }}
-        />
-      </div>
-    </Card>
+    <>
+      <StyledQuoteWrapper>
+        <Card>
+          <StyledTitle>Quote # {quotesLength + 1}</StyledTitle>
+          <StyledQuote>{quote && <Markup content={quote} />}</StyledQuote>
+          <StyledAuthor>{author && <Markup content={author} />}</StyledAuthor>
+          {/* <React.Suspense fallback={<div>Loading Reader...</div>}>
+              {quote ? <ReaderLazy quote={quote} /> : null}
+            </React.Suspense> */}
+          {quote ? <Reader quote={quote} /> : null}
+          <RateButtons handleBtnClick={handleBtnClick} />
+          <PreviousQuoteBtnWrapper>
+            <Button onClick={togglePreviousQuote}>
+              {`${showPrevQuotes ? 'Hide' : 'View'} Previous Quotes`}
+            </Button>
+          </PreviousQuoteBtnWrapper>
+        </Card>
+      </StyledQuoteWrapper>
+      {showPrevQuotes && <PreviousQuotes />}
+    </>
   );
 }
+
+export default React.memo(Quote);

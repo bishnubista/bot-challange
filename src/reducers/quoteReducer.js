@@ -13,6 +13,7 @@ const initialState = {
   quote: '',
   author: '',
 };
+
 export const quoteReducer = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_RANDOM_QUOTE_SUCCESS: {
